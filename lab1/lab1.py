@@ -4,8 +4,6 @@ import matplotlib.pyplot as plot
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-# 25
-
 t = s.Symbol('t')
 
 x = s.cos(3 * t) * s.cos(t)
@@ -31,7 +29,6 @@ AY = np.zeros_like(T)
 RX = np.zeros_like(T)
 RY = np.zeros_like(T)
 
-
 for i in range(len(T)):
     X[i] = x.subs(t, T[i])
     Y[i] = y.subs(t, T[i])
@@ -52,7 +49,9 @@ Pnt = grf.plot(X[0], Y[0], marker='o')[0]
 Vpl = grf.plot([X[0], X[0] + VX[0]], [Y[0], Y[0] + VY[0]], 'r')[0]
 Apl = grf.plot([X[0], X[0] + AX[0]], [Y[0], Y[0] + AY[0]], 'g')[0]
 Rpl = grf.plot([X[0], X[0] + RX[0]], [Y[0], Y[0] + RY[0]], 'b')[0]
+R_vec = grf.plot([0, X[0]], [0, Y[0]], 'y')[0]  # Радиус-вектор
 
+R_arr = grf.plot([], [], 'y')[0]  # Стрелка для радиус-вектора
 
 def vect_arrow(vec_x, vec_y, _x, _y):
     a = 0.15
@@ -70,34 +69,43 @@ def vect_arrow(vec_x, vec_y, _x, _y):
 
     return arr_x, arr_y
 
-
-ArVX, ArVY = vect_arrow(VX[0], VY[0], X[0], Y[0]) # velocity
+ArVX, ArVY = vect_arrow(VX[0], VY[0], X[0], Y[0])  # velocity
 V_arr = grf.plot(ArVX, ArVY, 'r')[0]
 
-ArAX, ArAY = vect_arrow(AX[0], AY[0], X[0], Y[0]) # acceleration
+ArAX, ArAY = vect_arrow(AX[0], AY[0], X[0], Y[0])  # acceleration
 A_arr = grf.plot(ArAX, ArAY, 'g')[0]
 
-ArRX, ArRY = vect_arrow(RX[0], RY[0], X[0], Y[0]) # radius-vector
-R_arr = grf.plot(ArRX, ArRY, 'b')[0]
+ArRX, ArRY = vect_arrow(RX[0], RY[0], X[0], Y[0])  # Радиус кривизны
+R_arr.set_data([], [])
 
+R_curve_arr = grf.plot([], [], 'b')[0]  # Стрелка для радиуса кривизны
 
 def anim(j):
-    global ArVX, ArVY, ArAX, ArAY, ArRX, ArRY
+    global ArVX, ArVY, ArAX, ArAY, ArRX, ArRY, ArR_vec_X, ArR_vec_Y
     Pnt.set_data([X[j]], [Y[j]])
 
+    # Обновление вектора скорости
     Vpl.set_data([X[j], X[j] + VX[j]], [Y[j], Y[j] + VY[j]])
     ArVX, ArVY = vect_arrow(VX[j], VY[j], X[j], Y[j])
     V_arr.set_data(ArVX, ArVY)
 
+    # Обновление вектора ускорения
     Apl.set_data([X[j], X[j] + AX[j]], [Y[j], Y[j] + AY[j]])
     ArAX, ArAY = vect_arrow(AX[j], AY[j], X[j], Y[j])
     A_arr.set_data(ArAX, ArAY)
 
+    # Обновление радиуса кривизны
     Rpl.set_data([X[j], X[j] + RX[j]], [Y[j], Y[j] + RY[j]])
     ArRX, ArRY = vect_arrow(RX[j], RY[j], X[j], Y[j])
-    R_arr.set_data(ArRX, ArRY)
+    R_curve_arr.set_data(ArRX, ArRY)
 
-    return [Pnt, Vpl, V_arr, Apl, A_arr, Rpl, R_arr]
+    # Обновление радиус-вектора
+    R_vec.set_data([0, X[j]], [0, Y[j]])
+    ArR_vec_X, ArR_vec_Y = vect_arrow(X[j], Y[j], 0, 0)
+    R_arr.set_data(ArR_vec_X, ArR_vec_Y)
+
+    return [Pnt, Vpl, V_arr, Apl, A_arr, Rpl, R_curve_arr, R_vec, R_arr]
+
 
 
 an = FuncAnimation(fgr, anim, frames=step, interval=1)
